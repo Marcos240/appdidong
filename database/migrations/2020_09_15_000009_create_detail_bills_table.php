@@ -1,0 +1,35 @@
+<?php
+
+use Illuminate\Database\Migrations\Migration;
+use Illuminate\Database\Schema\Blueprint;
+use Illuminate\Support\Facades\Schema;
+
+class CreateDetailBillsTable extends Migration
+{
+    /**
+     * Run the migrations.
+     *
+     * @return void
+     */
+    public function up()
+    {
+        Schema::create('detail_bills', function (Blueprint $table) {
+            $table->id();
+            $table->unsignedBigInteger('idBill');
+            $table->unsignedBigInteger('idItem');
+            $table->unsignedBigInteger('counting');
+            $table->foreign('idBill')->references('id')->on('bills');
+            $table->foreign('idItem')->references('id')->on('items');
+        });
+    }
+
+    /**
+     * Reverse the migrations.
+     *
+     * @return void
+     */
+    public function down()
+    {
+        Schema::dropIfExists('detail_bills');
+    }
+}
