@@ -23,7 +23,7 @@ class SignupRequest extends Request
             'name' => 'required',
             'passcode' => 'required',
             'passcodeConfirm' => 'required|same:passcode',
-            'phone' => 'required'
+            'phone' => 'required|unique:users'
         ];
     }
     public function messages()
@@ -38,7 +38,8 @@ class SignupRequest extends Request
             'passcode.required' => 'Bạn cần nhập mật khẩu mới',
             'passcodeConfirm.required' => 'Bạn cần xác nhận mật khẩu mới',
             'passcodeConfirm.same' => 'Mật khẩu mới không trùng khớp',
-            'phone.required' => "Bạn cần nhập số điện thoại"
+            'phone.required' => "Bạn cần nhập số điện thoại",
+            'phone.unique' => "Số điện thoại này đã được sử dụng rồi"
         ];
     }
 }
