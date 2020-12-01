@@ -41,11 +41,6 @@ class AuthenticationMiddleware
                 'status' => 'fail',
                 'message' => 'The token is invalid or has expired!'
             ], 401);
-        } catch (TokenInvalidException $e) {
-            return response()->json([
-                'status' => 'fail',
-                'message' => 'The token is invalid or has expired!'
-            ], 401);
         }
 
         // Get user includes additionally passcode, passcodeChangedAt property based on id from payload in decoded token

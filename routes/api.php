@@ -36,12 +36,6 @@ Route::prefix('/users') -> group(function() {
         // * Update passcode
         Route::patch('/updatePasscode', 'AuthController@updatePasscode'); // done
 
-        // * Forgot passcode route
-        Route::post('/forgotPasscode', 'AuthController@forgotPasscode');
-
-        // * Reset passcode route
-        Route::patch('/resetPasscode/{token}', 'AuthController@resetPasscode');
-
         // * Get user profile
         Route::get('/profile', 'UserController@getUserProfile'); // done
 
@@ -59,10 +53,19 @@ Route::prefix('/items') -> group(function() {
     // * Get list of items route
     Route::get('/','ItemController@getListItems');
 
+    //
+    Route::post('','ItemController@takeItems');
+
         // Get item's detail route
         Route::get('/{id}', 'ItemController@getItem')
         ->middleware([CheckItemExistenceMiddleware::class]); // done
 
+        Route::get('/{id}/details_item', 'ItemController@getDetailsItem')
+        ->middleware([CheckItemExistenceMiddleware::class]);
+
+        Route::get('/{id}/{idUser}','ItemController@checkLiked')
+        ->middleware([CheckItemExistenceMiddleware::class]);
+        
         Route::middleware([AuthenticationMiddleware::class])->group(function() {
         // Update item's like route
             Route::patch('/{id}', 'ItemController@updateLikeItem')
@@ -78,6 +81,7 @@ Route::prefix('/chosen_items') -> group(function() {
         Route::middleware([AuthenticationMiddleware::class])->group(function() {
             // * Get list of items route
             Route::get('/','ItemController@getChosenItem');
+            Route::delete('/{id}/delete', 'ItemController@deleteChosenItem');
         });
 });
 
@@ -86,5 +90,10 @@ Route::prefix('/bill') -> group(function() {
     Route::middleware([AuthenticationMiddleware::class])->group(function() {
         // * Get list of items route
         Route::post('/','BillController@createBill');
+    });
+
+    Route::middleware([AuthenticationMiddleware::class])->group(function() {
+        // * Get list of items route
+        Route::get('/','BillController@getBill');
     });
 });

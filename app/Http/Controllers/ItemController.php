@@ -18,7 +18,9 @@ use DB;
 class ItemController extends Controller {
 
     public function getListItems(){
-        $item = Item::paginate(20);
+        //$item = Item::paginate(20);
+        $item = DB::table('items')->join('sizes', 'items.idSize', '=', 'sizes.id')
+        ->select('items.*', 'nameSize')->paginate(20);
         if($item->currentPage() <= $item->lastPage())
             return response()->json([
                 'status' => 'success',
@@ -32,10 +34,21 @@ class ItemController extends Controller {
 
     }
 
-    public function getItem(Request $req) {
+    public function getItem(Request $req, $id) {
 
         // get Item from previous middleware 
-        $item = $req->input('item');
+        $item = DB::table('items')->join('sizes', 'items.idSize', '=', 'sizes.id')->where('items.id',$id)
+        ->select('items.*', 'nameSize')->get();
+        return response()->json([
+            'status' => 'success',
+            'data' => $item
+        ], 200);
+    }
+    public function getDetailsItem(Request $req, $id) {
+
+        // get Item from previous middleware 
+        $item = DB::table('items')->join('detail_photos', 'detail_photos.idItem', '=', 'items.id')->where('items.id',$id)
+        ->select('detail_photos.namephoto')->get();
         return response()->json([
             'status' => 'success',
             'data' => $item
@@ -43,7 +56,24 @@ class ItemController extends Controller {
     }
 
 
-    
+    public function checkLiked($id, $idUser)
+    {
+        $data = LikedUser::where('idUser',$idUser)->where('idItem',$id)->get();
+        if($data->count() == 0)
+        {
+            return response()->json([
+                'status' => 'success',
+                'liked' => '0'
+            ]);
+        }
+        else 
+        {
+            return response()->json([
+                'status' => 'success',
+                'liked' => '1'
+            ]);
+        }
+    }
 
     public function updateLikeItem(Request $req) {
 
@@ -130,6 +160,58 @@ class ItemController extends Controller {
             'data' => $result,
         ], 201);
 
+    }
+    
+    public function deleteChosenItem(Request $req, $id)
+    {
+        //check item available???
+        $chosen = ChosenItem::where('idUser',$req->user->id)->where('idItem',$id);
+        if (!$chosen) {
+            return response()->json([
+                'status' => 'fail',
+                'message' => 'Mặt hàng chưa được chọn'
+            ], 404);
+        }
+        else
+        DB::table('chosen_items')->where('idItem',$id)->where('idUser',$req->user->id)->delete();
+        return response()->json([
+            'status' => 'success'
+        ], 201);
+    }
+
+    public function takeItems(Request $req){
+        $query = $req->all();
+        $result = Item::select("*");
+        if ($req->has('category')) {
+            $categorys = $query['category'];
+                $result = $result->whereIn('idCategory',explode(',',$categorys));
+        }
+        if ($req->has('size')) {
+            $sizes = $query['size'];
+                $result = Item::select("*")->whereIn('idSize',explode(',',$sizes));
+        }
+
+        if ($req->has('cost')) {
+            $costs = explode(',', $query['cost']);
+            $result = Item::select("*");
+            foreach($costs as &$value) 
+            {
+                if($value == 1) 
+                $result = $result->orWhere('cost','<','20000');
+                else
+                    if($value == 2)
+                    {
+                        $result = $result->orWhere('cost','>=','20000')->where('cost','<','50000');
+                    }
+                    else
+                        $result = $result->orwhere('cost','>','50000');
+            }
+        }
+        $data = $result->get();
+        return response()->json([
+            'status' => 'success',
+            'data' => $data
+        ], 200);
     }
 
     private static function filterUser($srcUser) {

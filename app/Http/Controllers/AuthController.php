@@ -105,26 +105,8 @@ class AuthController extends Controller {
         }
 
         // OK -> continue updating passcode
-        $_user = User::find($user->id);
-        $_user->passcode = $passcode;
-        $_user->save();
-        
         // Response success message
-        return $this->responseCookie($_user, 200);
-    }
-
-    public function forgotPasscode(Request $req) {
-        return response()->json([
-            'status' => 'fail',
-            'message' => 'This api route is comming soon'
-        ], 404);
-    }
-
-    public function resetPasscode(Request $req) {
-        return response()->json([
-            'status' => 'fail',
-            'message' => 'This api route is comming soon'
-        ], 404);
+        return $this->responseCookie($user, 200);
     }
 
     private function signToken($id) {

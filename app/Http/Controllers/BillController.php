@@ -56,6 +56,8 @@ class BillController extends Controller
                     ]
                 );
             }
+            DB::table('users')->where('id',$req->user->id)->update(['pointCollected'=> ($req->user->pointCollected)+($req->totalCost)/1000]);
+            DB::table('users')->where('id',$req->user->id)->update(['pointUsable'=> ($req->user->pointUsable)+($req->totalCost)/1000]);
             DB::table('chosen_items')->where('idUser',$req->user->id)->delete();
             $bill = Bill::where('id', $id)->get();
             return response()->json([
@@ -63,5 +65,20 @@ class BillController extends Controller
                 'data' => $bill,
             ], 201);
         }
+    }
+    public function getBill(Request $req){
+        $bill = Bill::where('idUser',$req->user->id)->orderByDesc('dateOrder')->get();
+        $i = 0;
+        foreach($bill as $bill)
+        {
+            $data =  DB::table('detail_bills')->join('items','detail_bills.idItem','=','items.id')->select('items.name','items.cost','detail_bills.counting','detail_bills.idBill');
+            $result[$i] = $bill;
+            $result[$i]['detail_bills'] = $data->where('idBill',$bill->id)->get();
+            $i++;
+        }
+        return response()->json([
+            'status' => 'success',
+            'data' => $result
+        ], 201);
     }
 }
